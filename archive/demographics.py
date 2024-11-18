@@ -10,6 +10,26 @@ def get_df_from_csv(filename):
     return df
 
 
+def get_generations_list():
+    return ['Gen Z', 'Millennial', 'Gen X', 'Baby Boomer']
+
+
+def get_gender_list(df):
+    if 'Gender' in df.columns:
+        genders = df['Gender'].dropna().unique()
+        return genders
+    else:
+        return pd.Series(dtype=int)
+
+
+def get_region_list(df):
+    if 'US Region' in df.columns:
+        regions = df['US Region'].dropna().unique()
+        return regions
+    else:
+        return pd.Series(dtype=int)
+
+
 def get_generation_counts(df):
     if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
         return None
