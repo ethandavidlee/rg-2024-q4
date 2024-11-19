@@ -275,11 +275,11 @@ def get_gender_data(df, question):
     # Create new dataframe and calculate percentage
     data = []
     for gender, statements in responses_by_gender.items():
-        generation_count = gender_counts[gender]
+        gender_count = gender_counts[gender]
         for statement, responses in statements.items():
             for response, count in responses.items():
-                percentage = (count / generation_count)
-                data.append({'Generation': gender,
+                percentage = (count / gender_count)
+                data.append({'Gender': gender,
                              'Statement': statement,
                              'Response': response,
                              'Count': count,
@@ -311,12 +311,12 @@ def get_region_data(df, question):
 
     # Create new dataframe and calculate percentage
     data = []
-    for generation, statements in responses_by_region.items():
-        generation_count = region_counts[generation]
+    for region, statements in responses_by_region.items():
+        region_count = region_counts[region]
         for statement, responses in statements.items():
             for response, count in responses.items():
-                percentage = (count / generation_count)
-                data.append({'Generation': generation,
+                percentage = (count / region_count)
+                data.append({'Region': region,
                              'Statement': statement,
                              'Response': response,
                              'Count': count,

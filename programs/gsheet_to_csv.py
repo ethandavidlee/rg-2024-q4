@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     gsheetkey = "1KDxCu1ML9fh2em6_Fqm5WumsiAyaJYowpRavf2eLBBA"
     sheet_name = 'Raw Data'
-    filename = 'raw-data.csv'
+    filename = '../raw-data.csv'
 
     raw_data = get_df_from_gsheet(gsheetkey, sheet_name)
     write_gsheet_to_csv(raw_data, filename)
