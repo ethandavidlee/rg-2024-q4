@@ -187,7 +187,7 @@ def get_single_matrix_response(df, question, respondent, statement):
         return None
 
 
-def get_overall_data(df, question):
+def get_overall_data_as_matrix(df, question):
     statements = get_matrix_statements(df, question)
     response_options = get_matrix_responses(df, question)
     overall_count = 0
@@ -200,16 +200,14 @@ def get_overall_data(df, question):
                 response_data[statement][response] += 1
         overall_count += 1
 
-    # Create new dataframe and calculate percentage
-    data = []
+    # Calculate percentages
+    percentage_data = {}
     for statement, responses in response_data.items():
-        for response, count in responses.items():
-            percentage = (count / overall_count)
-            data.append({'All respondents': 'All respondents',
-                         'Statement': statement,
-                         'Response': response,
-                         'Count': count,
-                         'Percentage': percentage})
+        percentage_data[statement] = {response: (count / overall_count) for response, count in responses.items()}
+
+    # Convert to DataFrame and insert the statements as the first column
+    data = pd.DataFrame(percentage_data).T
+    data.insert(0, 'All respondents', data.index)
 
     return pd.DataFrame(data)
 
@@ -235,20 +233,29 @@ def get_generation_data(df, question):
             ):
                 responses_by_generation[generation][statement][response] += 1
 
-    # Create new dataframe and calculate percentage
-    data = []
+    # Initialize a list to hold data for all generations
+    all_data_frames = []
+
+    # Calculate percentages and prepare the DataFrame for each generation
     for generation, statements in responses_by_generation.items():
+        percentage_data = {}
         generation_count = generation_counts[generation]
         for statement, responses in statements.items():
+            percentage_data[statement] = {}
             for response, count in responses.items():
-                percentage = (count / generation_count)
-                data.append({'Generation': generation,
-                             'Statement': statement,
-                             'Response': response,
-                             'Count': count,
-                             'Percentage': percentage})
+                percentage_data[statement][response] = (count / generation_count)
 
-    return pd.DataFrame(data)
+        # Create a DataFrame for the current generation
+        gen_df = pd.DataFrame(percentage_data).T
+        gen_df['Generation'] = generation  # Add the generation for each column
+        all_data_frames.append(gen_df)
+
+    # Concatenate all generation data frames into a single DataFrame
+    final_data = pd.concat(all_data_frames, axis=0)
+    final_data.reset_index(inplace=True, drop=False)
+    final_data.rename(columns={'index': 'Statement'}, inplace=True)
+
+    return final_data
 
 
 def get_gender_data(df, question):
@@ -272,20 +279,29 @@ def get_gender_data(df, question):
             ):
                 responses_by_gender[gender][statement][response] += 1
 
-    # Create new dataframe and calculate percentage
-    data = []
-    for gender, statements in responses_by_gender.items():
-        gender_count = gender_counts[gender]
-        for statement, responses in statements.items():
-            for response, count in responses.items():
-                percentage = (count / gender_count)
-                data.append({'Gender': gender,
-                             'Statement': statement,
-                             'Response': response,
-                             'Count': count,
-                             'Percentage': percentage})
+    # Initialize a list to hold data for all generations
+    all_data_frames = []
 
-    return pd.DataFrame(data)
+    # Calculate percentages and prepare the DataFrame for each generation
+    for gender, statements in responses_by_gender.items():
+        percentage_data = {}
+        generation_count = gender_counts[gender]
+        for statement, responses in statements.items():
+            percentage_data[statement] = {}
+            for response, count in responses.items():
+                percentage_data[statement][response] = (count / generation_count)
+
+        # Create a DataFrame for the current gender
+        gender_df = pd.DataFrame(percentage_data).T
+        gender_df['Gender'] = gender  # Add the gender for each column
+        all_data_frames.append(gender_df)
+
+    # Concatenate all generation data frames into a single DataFrame
+    final_data = pd.concat(all_data_frames, axis=0)
+    final_data.reset_index(inplace=True, drop=False)
+    final_data.rename(columns={'index': 'Statement'}, inplace=True)
+
+    return final_data
 
 
 def get_region_data(df, question):
@@ -309,20 +325,30 @@ def get_region_data(df, question):
             ):
                 responses_by_region[region][statement][response] += 1
 
-    # Create new dataframe and calculate percentage
-    data = []
+    # Initialize a list to hold data for all generations
+    all_data_frames = []
+
+    # Calculate percentages and prepare the DataFrame for each region
     for region, statements in responses_by_region.items():
+        percentage_data = {}
         region_count = region_counts[region]
         for statement, responses in statements.items():
+            percentage_data[statement] = {}
             for response, count in responses.items():
-                percentage = (count / region_count)
-                data.append({'Region': region,
-                             'Statement': statement,
-                             'Response': response,
-                             'Count': count,
-                             'Percentage': percentage})
+                percentage_data[statement][response] = (count / region_count)
 
-    return pd.DataFrame(data)
+        # Create a DataFrame for the current region
+        region_df = pd.DataFrame(percentage_data).T
+        region_df['Region'] = region  # Add the region for each column
+        all_data_frames.append(region_df)
+
+    # Concatenate all generation data frames into a single DataFrame
+    final_data = pd.concat(all_data_frames, axis=0)
+    final_data.reset_index(inplace=True, drop=False)
+    final_data.rename(columns={'index': 'Statement'}, inplace=True)
+
+    return final_data
+
 
 
 def write_section_to_csv(data, section_name, filename, mode='w'):
@@ -332,6 +358,7 @@ def write_section_to_csv(data, section_name, filename, mode='w'):
                 f.write("\n")
             f.write(f"{section_name}\n")  # Write section name to CSV
             data.to_csv(f, index=False, header=True)  # Append data under section name
+
     else:
         print(f"No {section_name.lower()} to write.")
 
@@ -341,7 +368,7 @@ def export_data_to_csv(df, question, filename):
     Take the imported data, question, and export all required data to a new CSV with the corresponding filename,
     appending each section of the data to the file.
     """
-    overall_data = get_overall_data(df, question)
+    overall_data = get_overall_data_as_matrix(df, question)
     gender_data = get_gender_data(df, question)
     generation_data = get_generation_data(df, question)
     region_data = get_region_data(df, question)
@@ -356,10 +383,10 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = 'raw-data.csv'
+    import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = ('How likely are you to do any of the following because of the election results?')
-    export_data_name = 'Question 5.csv'
+    my_question = 'How do you think the outcome of the U.S. election will influence these aspects of the job market?'
+    export_data_name = 'Question 3.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 

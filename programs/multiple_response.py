@@ -139,74 +139,92 @@ def get_region(df, respondent):
         return None
 
 
-def get_matrix_statements(df, question):
+def get_multi_responses(df, question):
     if question not in df.columns:
         return None
 
-    statements = set()
+    question_responses = set()
 
-    # Iterate through first row in the specified column
-    for entry in df[question].dropna().unique():
-        # Split the entry into individual key-value pairs
-        items = entry.split(" | ")
-        for item in items:
-            if ':' in item:
-                key, value = item.split(":", 1)
-                statements.add(key.strip())
+    # Identify columns containing responses for the question
+    question_columns = [col for col in df.columns if question in col]
 
-    return list(statements)
+    if question_columns:
+        # Loop through each column with responses for Q6
+        for col in question_columns:
+            # Drop empty cells and get unique responses in this column
+            unique_responses = df[col].dropna().str.strip().unique()
 
+            # Add each unique response to the list if it's not already present
+            for response in unique_responses:
+                if response not in question_responses:
+                    question_responses.add(response)
 
-def get_matrix_responses(df, question):
-    if question not in df.columns:
-        return None
-
-    responses = set()
-
-    # Iterate through each row in the specified column
-    for entry in df[question].dropna().unique():
-        # Split the entry into individual key-value pairs
-        items = entry.split(" | ")
-        for item in items:
-            if ':' in item:
-                key, value = item.split(":", 1)
-                responses.add(value.strip())
-
-    return list(responses)
+    return question_responses
 
 
-def get_single_matrix_response(df, question, respondent, statement):
-    if question in df.columns:
-        items = df.loc[respondent, question].split(" | ")
-        for item in items:
-            if ':' in item:
-                key, value = item.split(":", 1)
-                if key == statement:
-                    return value
+def get_single_multi_response(df, question, respondent):
+    # Identify columns containing responses for the question
+    question_columns = [col for col in df.columns if question in col]
+    responses = []
+
+    if question_columns:
+        # Loop through each column with responses for Q6
+        for col in question_columns:
+            # Drop empty cells and get unique responses in this column
+            response = df.loc[respondent, col]
+            if not pd.isna(response):
+                responses.append(response)
     else:
         return None
 
+    return responses
+
 
 def get_overall_data(df, question):
-    statements = get_matrix_statements(df, question)
-    response_options = get_matrix_responses(df, question)
+    response_options = get_multi_responses(df, question)
     overall_count = 0
-    response_data = {statement: {response: 0 for response in response_options} for statement in statements}
+    response_data = {response: 0 for response in response_options}
 
     for i, row in df.iterrows():
-        for statement in statements:
-            response = get_single_matrix_response(df, question, i, statement)
+        responses = get_single_multi_response(df, question, i)
+        for response in responses:
             if response in response_options:
-                response_data[statement][response] += 1
+                response_data[response] += 1
         overall_count += 1
 
     # Create new dataframe and calculate percentage
     data = []
-    for statement, responses in response_data.items():
+    for response, count in response_data.items():
+        percentage = (count / overall_count)
+        data.append({'All respondents': 'All respondents',
+                     'Response': response,
+                     'Count': count,
+                     'Percentage': percentage})
+
+    return pd.DataFrame(data)
+
+
+def get_generation_data(df, question):
+    response_options = get_multi_responses(df, question)
+    generation_counts = get_generation_counts(df)
+    generations = get_generations_list()
+    responses_by_generation = {generation: {response: 0 for response in response_options} for generation in generations}
+
+    for i, row in df.iterrows():
+        generation = get_generation(df, i)
+        responses = get_single_multi_response(df, question, i)
+        for response in responses:
+            if (generation in responses_by_generation
+                    and response in responses_by_generation[generation]):
+                responses_by_generation[generation][response] += 1
+
+    # Create new dataframe and calculate percentage
+    data = []
+    for generation, responses in responses_by_generation.items():
+        generation_count = generation_counts[generation]
         for response, count in responses.items():
-            percentage = (count / overall_count)
-            data.append({'All respondents': 'All respondents',
-                         'Statement': statement,
+            percentage = (count / generation_count)
+            data.append({'Generation': generation,
                          'Response': response,
                          'Count': count,
                          'Percentage': percentage})
@@ -214,113 +232,58 @@ def get_overall_data(df, question):
     return pd.DataFrame(data)
 
 
-def get_generation_data(df, question):
-    statements = get_matrix_statements(df, question)
-    response_options = get_matrix_responses(df, question)
-    generation_counts = get_generation_counts(df)
-    generations = get_generations_list()
-    responses_by_generation = {generation:
-                                       {statement:
-                                            {response: 0 for response in response_options}
-                                        for statement in statements}
-                                   for generation in generations}
-
-    for i, row in df.iterrows():
-        generation = get_generation(df, i)
-        for statement in statements:
-            response = get_single_matrix_response(df, question, i, statement)
-            if (generation in responses_by_generation
-                    and statement in responses_by_generation[generation]
-                    and response in responses_by_generation[generation][statement]
-            ):
-                responses_by_generation[generation][statement][response] += 1
-
-    # Create new dataframe and calculate percentage
-    data = []
-    for generation, statements in responses_by_generation.items():
-        generation_count = generation_counts[generation]
-        for statement, responses in statements.items():
-            for response, count in responses.items():
-                percentage = (count / generation_count)
-                data.append({'Generation': generation,
-                             'Statement': statement,
-                             'Response': response,
-                             'Count': count,
-                             'Percentage': percentage})
-
-    return pd.DataFrame(data)
-
-
 def get_gender_data(df, question):
-    statements = get_matrix_statements(df, question)
-    response_options = get_matrix_responses(df, question)
+    response_options = get_multi_responses(df, question)
     gender_counts = get_gender_counts(df)
     genders = get_gender_list(df)
-    responses_by_gender = {gender:
-                               {statement:
-                                    {response: 0 for response in response_options}
-                                for statement in statements}
-                           for gender in genders}
+    responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
 
     for i, row in df.iterrows():
         gender = get_gender(df, i)
-        for statement in statements:
-            response = get_single_matrix_response(df, question, i, statement)
+        responses = get_single_multi_response(df, question, i)
+        for response in responses:
             if (gender in responses_by_gender
-                    and statement in responses_by_gender[gender]
-                    and response in responses_by_gender[gender][statement]
-            ):
-                responses_by_gender[gender][statement][response] += 1
+                    and response in responses_by_gender[gender]):
+                responses_by_gender[gender][response] += 1
 
     # Create new dataframe and calculate percentage
     data = []
-    for gender, statements in responses_by_gender.items():
+    for gender, responses in responses_by_gender.items():
         gender_count = gender_counts[gender]
-        for statement, responses in statements.items():
-            for response, count in responses.items():
-                percentage = (count / gender_count)
-                data.append({'Gender': gender,
-                             'Statement': statement,
-                             'Response': response,
-                             'Count': count,
-                             'Percentage': percentage})
+        for response, count in responses.items():
+            percentage = (count / gender_count)
+            data.append({'Generation': gender,
+                         'Response': response,
+                         'Count': count,
+                         'Percentage': percentage})
 
     return pd.DataFrame(data)
 
 
 def get_region_data(df, question):
-    statements = get_matrix_statements(df, question)
-    response_options = get_matrix_responses(df, question)
+    response_options = get_multi_responses(df, question)
     region_counts = get_region_counts(df)
     regions = get_region_list(df)
-    responses_by_region = {region:
-                                       {statement:
-                                            {response: 0 for response in response_options}
-                                        for statement in statements}
-                                   for region in regions}
+    responses_by_region = {region: {response: 0 for response in response_options} for region in regions}
 
     for i, row in df.iterrows():
         region = get_region(df, i)
-        for statement in statements:
-            response = get_single_matrix_response(df, question, i, statement)
+        responses = get_single_multi_response(df, question, i)
+        for response in responses:
             if (region in responses_by_region
-                    and statement in responses_by_region[region]
-                    and response in responses_by_region[region][statement]
-            ):
-                responses_by_region[region][statement][response] += 1
+                    and response in responses_by_region[region]):
+                responses_by_region[region][response] += 1
 
     # Create new dataframe and calculate percentage
     data = []
-    for region, statements in responses_by_region.items():
+    for region, responses in responses_by_region.items():
         region_count = region_counts[region]
-        for statement, responses in statements.items():
-            for response, count in responses.items():
-                percentage = (count / region_count)
-                data.append({'Region': region,
-                             'Statement': statement,
-                             'Response': response,
-                             'Count': count,
-                             'Percentage': percentage})
+        for response, count in responses.items():
+            percentage = (count / region_count)
+            data.append({'Region': region,
+                         'Response': response,
+                         'Count': count,
+                         'Percentage': percentage})
 
     return pd.DataFrame(data)
 
@@ -356,10 +319,10 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = 'raw-data.csv'
+    import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = ('How likely are you to do any of the following because of the election results?')
-    export_data_name = 'Question 5.csv'
+    my_question = 'Have you done or experienced any of the following?'
+    export_data_name = 'Question 6.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 
