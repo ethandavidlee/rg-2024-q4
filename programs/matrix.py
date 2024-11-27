@@ -181,8 +181,10 @@ def get_single_matrix_response(df, question, respondent, statement):
         for item in items:
             if ':' in item:
                 key, value = item.split(":", 1)
-                if key == statement:
-                    return value
+                stripped_key = key.rstrip(' ')
+                stripped_value = value.rstrip(' ')
+                if stripped_key == statement:
+                    return stripped_value
     else:
         return None
 
@@ -385,8 +387,8 @@ def export_data_to_csv(df, question, filename):
 if __name__ == "__main__":
     import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'How do you think the outcome of the U.S. election will influence these aspects of the job market?'
-    export_data_name = 'Question 3.csv'
+    my_question = 'How often have you experienced the following with a coworker?'
+    export_data_name = 'Question 7.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 

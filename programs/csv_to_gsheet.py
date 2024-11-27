@@ -47,8 +47,8 @@ def write_csv_to_gsheet(filename, gsheetkey, sheet_name):
 
 
 if __name__ == "__main__":
-    filename = '../csv_exports/Question 6.csv'
+    filename = '../csv_exports/Question 7.csv'
     gsheetkey = "1KDxCu1ML9fh2em6_Fqm5WumsiAyaJYowpRavf2eLBBA"
-    sheet_name = 'Question 6'
+    sheet_name = 'Question 7'
     write_csv_to_gsheet(filename, gsheetkey, sheet_name)
 

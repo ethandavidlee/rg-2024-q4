@@ -322,7 +322,7 @@ if __name__ == "__main__":
     import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
     my_question = 'Have you done or experienced any of the following?'
-    export_data_name = 'Question 6.csv'
+    export_data_name = 'Question 7.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 
