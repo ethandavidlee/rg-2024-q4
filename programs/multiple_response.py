@@ -30,7 +30,7 @@ def get_region_list(df):
         return pd.Series(dtype=int)
 
 
-def get_generation_counts(df):
+# def get_generation_counts(df):
     if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
         return None
 
@@ -70,20 +70,20 @@ def get_generation_counts(df):
     return pd.Series(generation_counts)
 
 
-def get_gender_counts(df):
-    if 'Gender' in df.columns:
-        gender_counts = df['Gender'].dropna().value_counts()
-        return gender_counts
-    else:
-        return pd.Series(dtype=int)
+# def get_gender_counts(df):
+#     if 'Gender' in df.columns:
+#         gender_counts = df['Gender'].dropna().value_counts()
+#         return gender_counts
+#     else:
+#         return pd.Series(dtype=int)
 
 
-def get_region_counts(df):
-    if 'US Region' in df.columns:
-        region_counts = df['US Region'].dropna().value_counts()
-        return region_counts
-    else:
-        return pd.Series(dtype=int)
+# def get_region_counts(df):
+#     if 'US Region' in df.columns:
+#         region_counts = df['US Region'].dropna().value_counts()
+#         return region_counts
+#     else:
+#         return pd.Series(dtype=int)
 
 
 def get_generation(df, respondent):
@@ -190,7 +190,9 @@ def get_overall_data(df, question):
         for response in responses:
             if response in response_options:
                 response_data[response] += 1
-        overall_count += 1
+        # add to overall count only if the respondent participated in this question
+        if responses:
+            overall_count += 1
 
     # Create new dataframe and calculate percentage
     data = []
@@ -206,9 +208,10 @@ def get_overall_data(df, question):
 
 def get_generation_data(df, question):
     response_options = get_multi_responses(df, question)
-    generation_counts = get_generation_counts(df)
+    generation_counts = {generation: 0 for generation in get_generations_list()}
     generations = get_generations_list()
     responses_by_generation = {generation: {response: 0 for response in response_options} for generation in generations}
+
 
     for i, row in df.iterrows():
         generation = get_generation(df, i)
@@ -217,13 +220,15 @@ def get_generation_data(df, question):
             if (generation in responses_by_generation
                     and response in responses_by_generation[generation]):
                 responses_by_generation[generation][response] += 1
+        # add to overall count only if the respondent participated in this question
+        if responses:
+            generation_counts[generation] += 1
 
     # Create new dataframe and calculate percentage
     data = []
     for generation, responses in responses_by_generation.items():
-        generation_count = generation_counts[generation]
         for response, count in responses.items():
-            percentage = (count / generation_count)
+            percentage = (count / generation_counts[generation])
             data.append({'Generation': generation,
                          'Response': response,
                          'Count': count,
@@ -234,7 +239,7 @@ def get_generation_data(df, question):
 
 def get_gender_data(df, question):
     response_options = get_multi_responses(df, question)
-    gender_counts = get_gender_counts(df)
+    gender_counts = {gender: 0 for gender in get_gender_list(df)}
     genders = get_gender_list(df)
     responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
 
@@ -245,6 +250,9 @@ def get_gender_data(df, question):
             if (gender in responses_by_gender
                     and response in responses_by_gender[gender]):
                 responses_by_gender[gender][response] += 1
+        # add to overall count only if the respondent participated in this question
+        if responses:
+            gender_counts[gender] += 1
 
     # Create new dataframe and calculate percentage
     data = []
@@ -262,7 +270,7 @@ def get_gender_data(df, question):
 
 def get_region_data(df, question):
     response_options = get_multi_responses(df, question)
-    region_counts = get_region_counts(df)
+    region_counts = {region: 0 for region in get_region_list(df)}
     regions = get_region_list(df)
     responses_by_region = {region: {response: 0 for response in response_options} for region in regions}
 
@@ -273,6 +281,9 @@ def get_region_data(df, question):
             if (region in responses_by_region
                     and response in responses_by_region[region]):
                 responses_by_region[region][response] += 1
+        # add to overall count only if the respondent participated in this question
+        if responses:
+            region_counts[region] += 1
 
     # Create new dataframe and calculate percentage
     data = []
@@ -321,8 +332,8 @@ def export_data_to_csv(df, question, filename):
 if __name__ == "__main__":
     import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'Have you done or experienced any of the following?'
-    export_data_name = 'Question 7.csv'
+    my_question = 'Did your workplace romance(s) influence your long-term career decisions?'
+    export_data_name = 'Question 11.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 

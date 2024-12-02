@@ -267,9 +267,8 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = 'raw-data.csv'
+    import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = ('How optimistic are you about the impact of the next presidential administration on your work and '
-                    'career?')
-    export_data_name = 'Question 2.csv'
+    my_question = 'In your current role, do you wish you had negotiated your starting salary or benefits more aggressively?'
+    export_data_name = 'Question 14.csv'
     export_data_to_csv(data_frame, my_question, export_data_name)
