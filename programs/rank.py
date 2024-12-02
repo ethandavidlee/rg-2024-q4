@@ -26,6 +26,10 @@ def get_region_list(df):
     if 'US Region' in df.columns:
         regions = df['US Region'].dropna().unique()
         return regions
+    elif 'UK Region' in df.columns:
+        regions = ['London', 'Northern England', 'Midlands (England)', 'Southern England', 'Scotland', 'Wales',
+                   'Northern Ireland']
+        return regions
     else:
         return pd.Series(dtype=int)
 
@@ -82,6 +86,32 @@ def get_region_counts(df):
     if 'US Region' in df.columns:
         region_counts = df['US Region'].dropna().value_counts()
         return region_counts
+    elif 'UK Region' in df.columns:
+        subregion_counts = df['UK Region'].dropna().value_counts()
+        not_counted = 0
+        region_counts = {'London': 0, 'Northern England': 0, 'Midlands (England)': 0, 'Southern England': 0,
+                         'Scotland': 0, 'Wales': 0, 'Northern Ireland': 0}
+        for subregion, count in subregion_counts.items():
+            if subregion == 'London':
+                region_counts['London'] += count
+            elif (subregion == 'North East (England' or subregion == 'North West (England)'  # Pollfish mistake with )
+                  or subregion == 'Yorkshire And The Humber'):
+                region_counts['Northern England'] += count
+            elif subregion == 'West Midlands (England)' or subregion == 'East Midlands (England)':
+                region_counts['Midlands (England)'] += count
+            elif (subregion == 'South East (England)' or subregion == 'East Of England'
+                  or subregion == 'South West (England)'):
+                region_counts['Southern England'] += count
+            elif subregion == 'Scotland':
+                region_counts['Scotland'] += count
+            elif subregion == 'Wales':
+                region_counts['Wales'] += count
+            elif subregion == 'Northern Ireland':
+                region_counts['Northern Ireland'] += count
+            else:
+                not_counted += count
+        print(f'Not included in region counts: {not_counted}')
+        return region_counts
     else:
         return pd.Series(dtype=int)
 
@@ -134,6 +164,27 @@ def get_gender(df, respondent):
 def get_region(df, respondent):
     if 'US Region' in df.columns:
         region = df.loc[respondent, 'US Region']
+        return region
+    elif 'UK Region' in df.columns:
+        subregion = df.loc[respondent, 'UK Region']
+        if subregion == 'London':
+            region = 'London'
+        elif (subregion == 'North East (England' or subregion == 'North West (England)'  # Pollfish mistake with )
+              or subregion == 'Yorkshire And The Humber'):
+            region = 'Northern England'
+        elif subregion == 'West Midlands (England)' or subregion == 'East Midlands (England)':
+            region = 'Midlands (England)'
+        elif (subregion == 'South East (England)' or subregion == 'East Of England'
+              or subregion == 'South West (England)'):
+            region = 'Southern England'
+        elif subregion == 'Scotland':
+            region = 'Scotland'
+        elif subregion == 'Wales':
+            region = 'Wales'
+        elif subregion == 'Northern Ireland':
+            region = 'Northern Ireland'
+        else:
+            region = None
         return region
     else:
         return None

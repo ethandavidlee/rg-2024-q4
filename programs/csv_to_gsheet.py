@@ -10,7 +10,7 @@ def preprocess_data(data):
 
 
 def write_csv_to_gsheet(filename, gsheetkey, sheet_name):
-    key_file_path = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/my_credentials.json'
+    key_file_path = '../my_credentials.json'
     scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file',
              'https://www.googleapis.com/auth/drive']
 
@@ -47,8 +47,8 @@ def write_csv_to_gsheet(filename, gsheetkey, sheet_name):
 
 
 if __name__ == "__main__":
-    filename = '../csv_exports/Question 11.csv'
-    gsheetkey = "1KDxCu1ML9fh2em6_Fqm5WumsiAyaJYowpRavf2eLBBA"
-    sheet_name = 'Question 11'
+    filename = '../csv_exports/cvg-2024-q4/Question 14.csv'
+    gsheetkey = "1HUgXox4FsOju9lmelMUH624FN9TbFjdUUsWUXdmeuYg"
+    sheet_name = 'Question 14'
     write_csv_to_gsheet(filename, gsheetkey, sheet_name)
 

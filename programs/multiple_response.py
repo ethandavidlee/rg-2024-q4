@@ -26,48 +26,52 @@ def get_region_list(df):
     if 'US Region' in df.columns:
         regions = df['US Region'].dropna().unique()
         return regions
+    elif 'UK Region' in df.columns:
+        regions = ['London', 'Northern England', 'Midlands (England)', 'Southern England', 'Scotland', 'Wales',
+                   'Northern Ireland']
+        return regions
     else:
         return pd.Series(dtype=int)
 
 
 # def get_generation_counts(df):
-    if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
-        return None
-
-    generations = get_generations_list()
-    generation_counts = {generation: 0 for generation in generations}
-    current_year = datetime.datetime.now().year
-
-    if 'Year Of Birth' in df.columns:
-        year_counts = df['Year Of Birth'].dropna().value_counts()
-        generation_counts = {'Gen Z': 0, 'Millennial': 0, 'Gen X': 0, 'Baby Boomer': 0}
-        for year, count in year_counts.items():
-            if 1997 <= year <= 2012:
-                generation_counts['Gen Z'] += count
-            elif 1981 <= year <= 1996:
-                generation_counts['Millennial'] += count
-            elif 1965 <= year <= 1980:
-                generation_counts['Gen X'] += count
-            elif 1946 <= year <= 1964:
-                generation_counts['Baby Boomer'] += count
-
-    elif 'Age' in df.columns:
-        age_counts = df['Age'].dropna().value_counts()
-        for age, count in age_counts.items():
-            birth_year = current_year - age
-            if 1997 <= birth_year <= 2012:
-                generation_counts['Gen Z'] += count
-            elif 1981 <= birth_year <= 1996:
-                generation_counts['Millennial'] += count
-            elif 1965 <= birth_year <= 1980:
-                generation_counts['Gen X'] += count
-            elif 1946 <= birth_year <= 1964:
-                generation_counts['Baby Boomer'] += count
-
-    else:
-        return None
-
-    return pd.Series(generation_counts)
+#     if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
+#         return None
+#
+#     generations = get_generations_list()
+#     generation_counts = {generation: 0 for generation in generations}
+#     current_year = datetime.datetime.now().year
+#
+#     if 'Year Of Birth' in df.columns:
+#         year_counts = df['Year Of Birth'].dropna().value_counts()
+#         generation_counts = {'Gen Z': 0, 'Millennial': 0, 'Gen X': 0, 'Baby Boomer': 0}
+#         for year, count in year_counts.items():
+#             if 1997 <= year <= 2012:
+#                 generation_counts['Gen Z'] += count
+#             elif 1981 <= year <= 1996:
+#                 generation_counts['Millennial'] += count
+#             elif 1965 <= year <= 1980:
+#                 generation_counts['Gen X'] += count
+#             elif 1946 <= year <= 1964:
+#                 generation_counts['Baby Boomer'] += count
+#
+#     elif 'Age' in df.columns:
+#         age_counts = df['Age'].dropna().value_counts()
+#         for age, count in age_counts.items():
+#             birth_year = current_year - age
+#             if 1997 <= birth_year <= 2012:
+#                 generation_counts['Gen Z'] += count
+#             elif 1981 <= birth_year <= 1996:
+#                 generation_counts['Millennial'] += count
+#             elif 1965 <= birth_year <= 1980:
+#                 generation_counts['Gen X'] += count
+#             elif 1946 <= birth_year <= 1964:
+#                 generation_counts['Baby Boomer'] += count
+#
+#     else:
+#         return None
+#
+#     return pd.Series(generation_counts)
 
 
 # def get_gender_counts(df):
@@ -134,6 +138,27 @@ def get_gender(df, respondent):
 def get_region(df, respondent):
     if 'US Region' in df.columns:
         region = df.loc[respondent, 'US Region']
+        return region
+    elif 'UK Region' in df.columns:
+        subregion = df.loc[respondent, 'UK Region']
+        if subregion == 'London':
+            region = 'London'
+        elif (subregion == 'North East (England' or subregion == 'North West (England)'  # Pollfish mistake with )
+              or subregion == 'Yorkshire And The Humber'):
+            region = 'Northern England'
+        elif subregion == 'West Midlands (England)' or subregion == 'East Midlands (England)':
+            region = 'Midlands (England)'
+        elif (subregion == 'South East (England)' or subregion == 'East Of England'
+              or subregion == 'South West (England)'):
+            region = 'Southern England'
+        elif subregion == 'Scotland':
+            region = 'Scotland'
+        elif subregion == 'Wales':
+            region = 'Wales'
+        elif subregion == 'Northern Ireland':
+            region = 'Northern Ireland'
+        else:
+            region = None
         return region
     else:
         return None
@@ -209,9 +234,9 @@ def get_overall_data(df, question):
 def get_generation_data(df, question):
     response_options = get_multi_responses(df, question)
     generation_counts = {generation: 0 for generation in get_generations_list()}
+    response_checker = False
     generations = get_generations_list()
     responses_by_generation = {generation: {response: 0 for response in response_options} for generation in generations}
-
 
     for i, row in df.iterrows():
         generation = get_generation(df, i)
@@ -220,9 +245,11 @@ def get_generation_data(df, question):
             if (generation in responses_by_generation
                     and response in responses_by_generation[generation]):
                 responses_by_generation[generation][response] += 1
+                response_checker = True
         # add to overall count only if the respondent participated in this question
-        if responses:
+        if response_checker:
             generation_counts[generation] += 1
+            response_checker = False
 
     # Create new dataframe and calculate percentage
     data = []
@@ -239,6 +266,7 @@ def get_generation_data(df, question):
 
 def get_gender_data(df, question):
     response_options = get_multi_responses(df, question)
+    response_checker = False
     gender_counts = {gender: 0 for gender in get_gender_list(df)}
     genders = get_gender_list(df)
     responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
@@ -250,9 +278,11 @@ def get_gender_data(df, question):
             if (gender in responses_by_gender
                     and response in responses_by_gender[gender]):
                 responses_by_gender[gender][response] += 1
+                response_checker = True
         # add to overall count only if the respondent participated in this question
-        if responses:
+        if response_checker:
             gender_counts[gender] += 1
+            response_checker = False
 
     # Create new dataframe and calculate percentage
     data = []
@@ -270,6 +300,7 @@ def get_gender_data(df, question):
 
 def get_region_data(df, question):
     response_options = get_multi_responses(df, question)
+    response_checker = False
     region_counts = {region: 0 for region in get_region_list(df)}
     regions = get_region_list(df)
     responses_by_region = {region: {response: 0 for response in response_options} for region in regions}
@@ -281,9 +312,11 @@ def get_region_data(df, question):
             if (region in responses_by_region
                     and response in responses_by_region[region]):
                 responses_by_region[region][response] += 1
+                response_checker = True
         # add to overall count only if the respondent participated in this question
-        if responses:
+        if response_checker:
             region_counts[region] += 1
+            response_checker = False
 
     # Create new dataframe and calculate percentage
     data = []
@@ -330,10 +363,9 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = '/Users/ethandavidlee/PycharmProjects/rg-2024-q4/raw-data.csv'
+    import_data_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'Did your workplace romance(s) influence your long-term career decisions?'
-    export_data_name = 'Question 11.csv'
+    my_question = 'What is causing you stress and anxiety at work? (Select all that apply)'
+    export_data_name = 'Question 14.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
-

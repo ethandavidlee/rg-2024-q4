@@ -26,6 +26,9 @@ def get_region_list(df):
     if 'US Region' in df.columns:
         regions = df['US Region'].dropna().unique()
         return regions
+    elif 'UK Region' in df.columns:
+        regions = df['UK Region'].dropna().unique()
+        return regions
     else:
         return pd.Series(dtype=int)
 
@@ -81,6 +84,9 @@ def get_region_counts(df):
     if 'US Region' in df.columns:
         region_counts = df['US Region'].dropna().value_counts()
         return region_counts
+    if 'UK Region' in df.columns:
+        region_counts = df['UK Region'].dropna().value_counts()
+        return region_counts
     else:
         return pd.Series(dtype=int)
 
@@ -134,12 +140,15 @@ def get_region(df, respondent):
     if 'US Region' in df.columns:
         region = df.loc[respondent, 'US Region']
         return region
+    elif 'UK Region' in df.columns:
+        region = df.loc[respondent, 'UK Region']
+        return region
     else:
         return None
 
 
 if __name__ == "__main__":
-    csv_name = 'raw-data.csv'
+    csv_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(csv_name)
     print(get_gender_counts(data_frame))
     print(get_generation_counts(data_frame))
