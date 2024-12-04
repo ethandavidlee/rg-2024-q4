@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+import sys
 
 
 def get_df_from_csv(filename):
@@ -236,7 +237,8 @@ def get_single_matrix_response(df, question, respondent, statement):
                 if key == statement:
                     return value
     else:
-        return None
+        print('Question not available. Please check that the provided question is valid for this sheet.')
+        sys.exit(1)
 
 
 def flip_dictionary(dictionary):

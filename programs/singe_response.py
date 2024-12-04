@@ -1,5 +1,6 @@
 import pandas as pd
 import datetime
+import sys
 
 
 def get_df_from_csv(filename):
@@ -33,88 +34,6 @@ def get_region_list(df):
     else:
         return pd.Series(dtype=int)
 
-
-# def get_generation_counts(df):
-#     if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
-#         return None
-#
-#     generations = get_generations_list()
-#     generation_counts = {generation: 0 for generation in generations}
-#     current_year = datetime.datetime.now().year
-#
-#     if 'Year Of Birth' in df.columns:
-#         year_counts = df['Year Of Birth'].dropna().value_counts()
-#         generation_counts = {'Gen Z': 0, 'Millennial': 0, 'Gen X': 0, 'Baby Boomer': 0}
-#         for year, count in year_counts.items():
-#             if 1997 <= year <= 2012:
-#                 generation_counts['Gen Z'] += count
-#             elif 1981 <= year <= 1996:
-#                 generation_counts['Millennial'] += count
-#             elif 1965 <= year <= 1980:
-#                 generation_counts['Gen X'] += count
-#             elif 1946 <= year <= 1964:
-#                 generation_counts['Baby Boomer'] += count
-#
-#     elif 'Age' in df.columns:
-#         age_counts = df['Age'].dropna().value_counts()
-#         for age, count in age_counts.items():
-#             birth_year = current_year - age
-#             if 1997 <= birth_year <= 2012:
-#                 generation_counts['Gen Z'] += count
-#             elif 1981 <= birth_year <= 1996:
-#                 generation_counts['Millennial'] += count
-#             elif 1965 <= birth_year <= 1980:
-#                 generation_counts['Gen X'] += count
-#             elif 1946 <= birth_year <= 1964:
-#                 generation_counts['Baby Boomer'] += count
-#
-#     else:
-#         return None
-#
-#     return pd.Series(generation_counts)
-#
-#
-# def get_gender_counts(df):
-#     if 'Gender' in df.columns:
-#         gender_counts = df['Gender'].dropna().value_counts()
-#         return gender_counts
-#     else:
-#         return pd.Series(dtype=int)
-#
-#
-# def get_region_counts(df):
-#     if 'US Region' in df.columns:
-#         region_counts = df['US Region'].dropna().value_counts()
-#         return region_counts
-#     elif 'UK Region' in df.columns:
-#         subregion_counts = df['UK Region'].dropna().value_counts()
-#         not_counted = 0
-#         region_counts = {'London': 0, 'Northern England': 0, 'Midlands (England)': 0, 'Southern England': 0,
-#                          'Scotland': 0, 'Wales': 0, 'Northern Ireland': 0}
-#         for subregion, count in subregion_counts.items():
-#             if subregion == 'London':
-#                 region_counts['London'] += count
-#             elif (subregion == 'North East (England' or subregion == 'North West (England)'  # Pollfish mistake with )
-#                   or subregion == 'Yorkshire And The Humber'):
-#                 region_counts['Northern England'] += count
-#             elif subregion == 'West Midlands (England)' or subregion == 'East Midlands (England)':
-#                 region_counts['Midlands (England)'] += count
-#             elif (subregion == 'South East (England)' or subregion == 'East Of England'
-#                   or subregion == 'South West (England)'):
-#                 region_counts['Southern England'] += count
-#             elif subregion == 'Scotland':
-#                 region_counts['Scotland'] += count
-#             elif subregion == 'Wales':
-#                 region_counts['Wales'] += count
-#             elif subregion == 'Northern Ireland':
-#                 region_counts['Northern Ireland'] += count
-#             else:
-#                 not_counted += count
-#         print(f'Not included in region counts: {not_counted}')
-#         return region_counts
-#     else:
-#         return pd.Series(dtype=int)
-#
 
 def get_generation(df, respondent):
     if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
@@ -195,7 +114,8 @@ def get_single_response_options(df, question):
         unique_responses = df[question].dropna().unique()
         return unique_responses
     else:
-        return None
+        print('Question not available. Please check that the provided question is valid for this sheet.')
+        sys.exit(1)
 
 
 def get_overall_data(df, question):
