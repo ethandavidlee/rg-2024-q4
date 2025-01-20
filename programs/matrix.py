@@ -176,6 +176,7 @@ def get_overall_data_as_matrix(df, question):
             if response in response_options:
                 response_checker = True
                 response_data[statement][response] += 1
+
         # Add to count only if respondent answered this question
         if response_checker:
             overall_count += 1
@@ -379,10 +380,10 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
+    import_data_name = '../csv_exports/rg-2025-jan/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'How often have you felt the following at work?'
-    export_data_name = 'Question 13.csv'
+    my_question = 'To what degree do you agree with the following statements on how AI will impact your company’s hiring process in the new year?'
+    export_data_name = 'Question 2.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 

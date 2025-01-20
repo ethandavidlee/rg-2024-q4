@@ -241,8 +241,8 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
+    import_data_name = '../csv_exports/rg-2025-jan/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'What would you do if your company mandated that you return to the office five days a week?'
-    export_data_name = 'Question 5.csv'
+    my_question = "Would you be willing to hire a foreign worker if they are more qualified than a US national?"
+    export_data_name = 'Question 15.csv'
     export_data_to_csv(data_frame, my_question, export_data_name)

@@ -48,8 +48,10 @@ def write_csv_to_gsheet(filename, gsheetkey, sheet_name):
 
 
 if __name__ == "__main__":
-    filename = '../csv_exports/cvg-2024-q4/Question 2 Division.csv'
-    gsheetkey = "1HUgXox4FsOju9lmelMUH624FN9TbFjdUUsWUXdmeuYg"
-    sheet_name = 'Question 5'
-    write_csv_to_gsheet(filename, gsheetkey, sheet_name)
+    gsheetkey = '1LoU7G_Esqfys0G4nFzKp1NU_1jCI7XBkYUB4_ycLPLI'
+    for num in range(1,16):
+        filename = f'Question {num}'
+        filepath = f'../csv_exports/rg-2025-jan/{filename}.csv'
+        sheet_name = filename
+        write_csv_to_gsheet(filepath, gsheetkey, sheet_name)
 

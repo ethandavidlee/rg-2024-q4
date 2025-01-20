@@ -309,9 +309,9 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
+    import_data_name = '../csv_exports/rg-2025-jan/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'What is causing you stress and anxiety at work? (Select all that apply)'
-    export_data_name = 'Question 14.csv'
+    my_question = 'What behavior from candidates annoys you the most during the hiring process?'
+    export_data_name = 'Question 13.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)

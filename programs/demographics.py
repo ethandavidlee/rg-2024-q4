@@ -148,7 +148,7 @@ def get_region(df, respondent):
 
 
 if __name__ == "__main__":
-    csv_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
+    csv_name = '../csv_exports/rg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(csv_name)
     print(get_gender_counts(data_frame))
     print(get_generation_counts(data_frame))
