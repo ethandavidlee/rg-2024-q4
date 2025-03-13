@@ -164,8 +164,8 @@ def get_generation_data(df, question):
 
 def get_gender_data(df, question):
     response_options = get_single_response_options(df, question)
-    gender_counts = {gender: 0 for gender in get_gender_list(df)}
     genders = get_gender_list(df)
+    gender_counts = {gender: 0 for gender in genders}
     responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
 
     for i, row in df.iterrows():

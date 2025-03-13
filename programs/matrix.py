@@ -380,10 +380,10 @@ def export_data_to_csv(df, question, filename):
 
 
 if __name__ == "__main__":
-    import_data_name = '../csv_exports/rg-2025-jan/raw-data.csv'
+    import_data_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    my_question = 'To what degree do you agree with the following statements on how AI will impact your company’s hiring process in the new year?'
-    export_data_name = 'Question 2.csv'
+    my_question = 'How often have you done the following in your career?'
+    export_data_name = 'Question test.csv'
 
     export_data_to_csv(data_frame, my_question, export_data_name)
 
