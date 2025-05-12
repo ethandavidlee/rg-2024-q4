@@ -11,6 +11,14 @@ def get_gender_counts(df):
         return pd.Series(dtype=int)
 
 
+def get_age_counts(df):
+    if 'Age' in df.columns:
+        age_counts = df['Age'].dropna().value_counts()
+        return age_counts
+    else:
+        return pd.Series(dtype=int)
+
+
 def get_generation_counts(df):
     if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
         return None
@@ -50,14 +58,6 @@ def get_generation_counts(df):
     return pd.Series(generation_counts)
 
 
-def get_age_counts(df):
-    if 'Age' in df.columns:
-        age_counts = df['Age'].dropna().value_counts()
-        return age_counts
-    else:
-        return pd.Series(dtype=int)
-
-
 def get_region_counts(df):
     if 'US Region' in df.columns:
         region_counts = df['US Region'].dropna().value_counts()
@@ -69,16 +69,29 @@ def get_region_counts(df):
         return pd.Series(dtype=int)
 
 
-def export_data_to_csv(df):
-    filename = '../csv_exports/rg-2025-q2/demographics.csv'
+def get_education_counts(df):
+    if 'Education Level' in df.columns:
+        education_counts = df['Education Level'].dropna().value_counts()
+        return education_counts
+    else:
+        return pd.Series(dtype=int)
+
+
+def export_data_to_csv(df, report_folder):
+    filename = f'../csv_exports/{report_folder}/demographics.csv'
+
     write_section_to_csv(get_gender_counts(df).rename_axis('Gender').reset_index(name='Count'), 'Gender', filename, 'w')
     print(get_gender_counts(df))
+
+    write_section_to_csv(get_age_counts(df).rename_axis('Age').reset_index(name='Count'), 'Age', filename, 'a')
+    print(get_age_counts(df))
 
     write_section_to_csv(get_generation_counts(df).rename_axis('Generation').reset_index(name='Count'), 'Generation', filename, 'a')
     print(get_generation_counts(df))
 
-    write_section_to_csv(get_age_counts(df).rename_axis('Age').reset_index(name='Count'), 'Age', filename, 'a')
-    print(get_age_counts(df))
+    write_section_to_csv(get_education_counts(df).rename_axis('Education').reset_index(name='Count'), 'Education',
+                         filename, 'a')
+    print(get_education_counts(df))
 
     write_section_to_csv(get_region_counts(df).rename_axis('Region').reset_index(name='Count'), 'Region', filename, 'a')
     print(get_region_counts(df))
@@ -89,8 +102,6 @@ if __name__ == "__main__":
     report_folder = 'rg-2025-q2'
 
     # Export data to CSV
-    import_data_name = '../csv_exports/{report_folder}/raw-data.csv'
+    import_data_name = f'../csv_exports/{report_folder}/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
-    export_data_to_csv(data_frame)
-
-
+    export_data_to_csv(data_frame, report_folder)

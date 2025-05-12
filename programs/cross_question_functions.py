@@ -10,6 +10,14 @@ def get_df_from_csv(filename):
     return df
 
 
+def get_gender_list(df):
+    if 'Gender' in df.columns:
+        genders = df['Gender'].dropna().unique()
+        return genders
+    else:
+        return pd.Series(dtype=int)
+
+
 def get_age_list(df):
     if 'Age' in df.columns:
         age = df['Age'].dropna().unique()
@@ -22,10 +30,10 @@ def get_generations_list():
     return ['Gen Z', 'Millennial', 'Gen X', 'Baby Boomer']
 
 
-def get_gender_list(df):
-    if 'Gender' in df.columns:
-        genders = df['Gender'].dropna().unique()
-        return genders
+def get_education_list(df):
+    if 'Education Level' in df.columns:
+        education = df['Education Level'].dropna().unique()
+        return education
     else:
         return pd.Series(dtype=int)
 
@@ -40,6 +48,14 @@ def get_region_list(df):
         return regions
     else:
         return pd.Series(dtype=int)
+
+
+def get_gender(df, respondent):
+    if 'Gender' in df.columns:
+        gender = df.loc[respondent, 'Gender']
+        return gender
+    else:
+        return None
 
 
 def get_age(df, respondent):
@@ -87,10 +103,10 @@ def get_generation(df, respondent):
         return None
 
 
-def get_gender(df, respondent):
-    if 'Gender' in df.columns:
-        gender = df.loc[respondent, 'Gender']
-        return gender
+def get_education(df, respondent):
+    if 'Education Level' in df.columns:
+        education = df.loc[respondent, 'Education Level']
+        return education
     else:
         return None
 
@@ -135,14 +151,15 @@ def write_section_to_csv(data, section_name, filename, mode='w'):
         print(f"No {section_name.lower()} to write.")
 
 
-def export_data_to_csv(overall_data, gender_data, generation_data, age_data, region_data, filename):
+def export_data_to_csv(overall_data, gender_data, age_data, generation_data, education_data, region_data, filename):
     """
     Take the imported data, question, and export all required data to a new CSV with the corresponding filename,
     appending each section of the data to the file.
     """
     write_section_to_csv(overall_data, 'Overall Data', filename, 'w')
     write_section_to_csv(gender_data, 'Gender Data', filename, 'a')
-    write_section_to_csv(generation_data, 'Generation Data', filename, 'a')
     write_section_to_csv(age_data, 'Age Data', filename, 'a')
+    write_section_to_csv(generation_data, 'Generation Data', filename, 'a')
+    write_section_to_csv(education_data, 'Education Data', filename, 'a')
     write_section_to_csv(region_data, 'Region Data', filename, 'a')
 
