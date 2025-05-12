@@ -72,6 +72,40 @@ def get_overall_data(df, question):
     return pd.DataFrame(data)
 
 
+def get_gender_data(df, question):
+    response_options = get_multi_responses(df, question)
+    response_checker = False
+    gender_counts = {gender: 0 for gender in get_gender_list(df)}
+    genders = get_gender_list(df)
+    responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
+
+    for i, row in df.iterrows():
+        gender = get_gender(df, i)
+        responses = get_single_multi_response(df, question, i)
+        for response in responses:
+            if (gender in responses_by_gender
+                    and response in responses_by_gender[gender]):
+                responses_by_gender[gender][response] += 1
+                response_checker = True
+        # add to overall count only if the respondent participated in this question
+        if response_checker:
+            gender_counts[gender] += 1
+            response_checker = False
+
+    # Create new dataframe and calculate percentage
+    data = []
+    for gender, responses in responses_by_gender.items():
+        gender_count = gender_counts[gender]
+        for response, count in responses.items():
+            percentage = (count / gender_count)
+            data.append({'Generation': gender,
+                         'Response': response,
+                         'Count': count,
+                         'Percentage': percentage})
+
+    return pd.DataFrame(data)
+
+
 def get_age_data(df, question):
     response_options = get_multi_responses(df, question)
     ages = get_age_list(df)
@@ -138,33 +172,33 @@ def get_generation_data(df, question):
     return pd.DataFrame(data)
 
 
-def get_gender_data(df, question):
+def get_education_data(df, question):
     response_options = get_multi_responses(df, question)
     response_checker = False
-    gender_counts = {gender: 0 for gender in get_gender_list(df)}
-    genders = get_gender_list(df)
-    responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
+    education_counts = {education: 0 for education in get_education_list(df)}
+    education_levels = get_education_list(df)
+    responses_by_education = {education: {response: 0 for response in response_options} for education in education_levels}
 
     for i, row in df.iterrows():
-        gender = get_gender(df, i)
+        education = get_education(df, i)
         responses = get_single_multi_response(df, question, i)
         for response in responses:
-            if (gender in responses_by_gender
-                    and response in responses_by_gender[gender]):
-                responses_by_gender[gender][response] += 1
+            if (education in responses_by_education
+                    and response in responses_by_education[education]):
+                responses_by_education[education][response] += 1
                 response_checker = True
         # add to overall count only if the respondent participated in this question
         if response_checker:
-            gender_counts[gender] += 1
+            education_counts[education] += 1
             response_checker = False
 
     # Create new dataframe and calculate percentage
     data = []
-    for gender, responses in responses_by_gender.items():
-        gender_count = gender_counts[gender]
+    for education, responses in responses_by_education.items():
+        education_count = education_counts[education]
         for response, count in responses.items():
-            percentage = (count / gender_count)
-            data.append({'Generation': gender,
+            percentage = (count / education_count)
+            data.append({'Education': education,
                          'Response': response,
                          'Count': count,
                          'Percentage': percentage})
@@ -225,20 +259,21 @@ def export_data_to_csv(df, question, filename):
     # Write overall data or print warning
     write_section_to_csv(get_overall_data(df, question), 'Overall Data', filename, 'w')
     write_section_to_csv(get_gender_data(df, question), 'Gender Data', filename, 'a')
-  #  write_section_to_csv(get_generation_data(df, question), 'Generation Data', filename, 'a')
     write_section_to_csv(get_age_data(df, question), 'Age Data', filename, 'a')
+  #  write_section_to_csv(get_generation_data(df, question), 'Generation Data', filename, 'a')
+    write_section_to_csv(get_education_data(df, question), 'Education Data', filename, 'a')
     write_section_to_csv(get_region_data(df, question), 'Region Data', filename, 'a')
 
 
 if __name__ == "__main__":
     # Set variables for analysis
     report_folder = 'rg-2025-q2'
-    question_number = '16'
-    question_text = 'When you define your own career success, how important are the following factors?'
+    question_number = '4'
+    question_text = 'Have you ever presented AI-generated work as your own without telling anyone?'
 
     # Export data to CSV
     import_data_name = f'../csv_exports/{report_folder}/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
     my_question = f'Q{question_number}: {question_text}'
-    export_data_name = f'Question {question_number}.csv'
+    export_data_name = f'../csv_exports/{report_folder}/Question {question_number}.csv'
     export_data_to_csv(data_frame, my_question, export_data_name)

@@ -32,27 +32,26 @@ def get_overall_data(df, question):
 
     return pd.DataFrame(data)
 
-
-def get_generation_data(df, question):
+def get_gender_data(df, question):
     response_options = get_single_response_options(df, question)
-    generation_counts = {generation: 0 for generation in get_generations_list()}
-    generations = get_generations_list()
-    responses_by_generation = {generation: {response: 0 for response in response_options} for generation in generations}
+    genders = get_gender_list(df)
+    gender_counts = {gender: 0 for gender in genders}
+    responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
 
     for i, row in df.iterrows():
-        generation = get_generation(df, i)
+        gender = get_gender(df, i)
         response = row[question]
-        if generation in responses_by_generation and response in responses_by_generation[generation]:
-            responses_by_generation[generation][response] += 1
-            generation_counts[generation] += 1
+        if gender in responses_by_gender and response in responses_by_gender[gender]:
+            responses_by_gender[gender][response] += 1
+            gender_counts[gender] += 1
 
     # Create new dataframe and calculate percentage
     data = []
-    for generation, responses in responses_by_generation.items():
-        generation_count = generation_counts[generation]
+    for gender, responses in responses_by_gender.items():
+        gender_count = gender_counts[gender]
         for response, count in responses.items():
-            percentage = count / generation_count
-            data.append({'Generation': generation, 'Response': response, 'Count': count, 'Percentage': percentage})
+            percentage = count/gender_count
+            data.append({'Gender': gender, 'Response': response, 'Count': count, 'Percentage': percentage})
 
     return pd.DataFrame(data)
 
@@ -81,26 +80,50 @@ def get_age_data(df, question):
     return pd.DataFrame(data)
 
 
-def get_gender_data(df, question):
+def get_generation_data(df, question):
     response_options = get_single_response_options(df, question)
-    genders = get_gender_list(df)
-    gender_counts = {gender: 0 for gender in genders}
-    responses_by_gender = {gender: {response: 0 for response in response_options} for gender in genders}
+    generation_counts = {generation: 0 for generation in get_generations_list()}
+    generations = get_generations_list()
+    responses_by_generation = {generation: {response: 0 for response in response_options} for generation in generations}
 
     for i, row in df.iterrows():
-        gender = get_gender(df, i)
+        generation = get_generation(df, i)
         response = row[question]
-        if gender in responses_by_gender and response in responses_by_gender[gender]:
-            responses_by_gender[gender][response] += 1
-            gender_counts[gender] += 1
+        if generation in responses_by_generation and response in responses_by_generation[generation]:
+            responses_by_generation[generation][response] += 1
+            generation_counts[generation] += 1
 
     # Create new dataframe and calculate percentage
     data = []
-    for gender, responses in responses_by_gender.items():
-        gender_count = gender_counts[gender]
+    for generation, responses in responses_by_generation.items():
+        generation_count = generation_counts[generation]
         for response, count in responses.items():
-            percentage = count/gender_count
-            data.append({'Gender': gender, 'Response': response, 'Count': count, 'Percentage': percentage})
+            percentage = count / generation_count
+            data.append({'Generation': generation, 'Response': response, 'Count': count, 'Percentage': percentage})
+
+    return pd.DataFrame(data)
+
+
+def get_education_data(df, question):
+    response_options = get_single_response_options(df, question)
+    education_counts = {education: 0 for education in get_education_list(df)}
+    education_levels = get_education_list(df)
+    responses_by_education = {education: {response: 0 for response in response_options} for education in education_levels}
+
+    for i, row in df.iterrows():
+        education = get_education(df, i)
+        response = row[question]
+        if education in responses_by_education and response in responses_by_education[education]:
+            responses_by_education[education][response] += 1
+            education_counts[education] += 1
+
+    # Create new dataframe and calculate percentage
+    data = []
+    for education, responses in responses_by_education.items():
+        education_count = education_counts[education]
+        for response, count in responses.items():
+            percentage = count/education_count
+            data.append({'Education': education, 'Response': response, 'Count': count, 'Percentage': percentage})
 
     return pd.DataFrame(data)
 
@@ -147,20 +170,21 @@ def export_data_to_csv(df, question, filename):
     """
     write_section_to_csv(get_overall_data(df, question), 'Overall Data', filename, 'w')
     write_section_to_csv(get_gender_data(df, question), 'Gender Data', filename, 'a')
-#    write_section_to_csv(get_generation_data(df, question), 'Generation Data', filename, 'a')
     write_section_to_csv(get_age_data(df, question), 'Age Data', filename, 'a')
+#    write_section_to_csv(get_generation_data(df, question), 'Generation Data', filename, 'a')
+    write_section_to_csv(get_education_data(df, question), 'Education Data', filename, 'a')
     write_section_to_csv(get_region_data(df, question), 'Region Data', filename, 'a')
 
 
 if __name__ == "__main__":
     # Set variables for analysis
     report_folder = 'rg-2025-q2'
-    question_number = '16'
-    question_text = 'When you define your own career success, how important are the following factors?'
+    question_number = '15'
+    question_text = 'Do you have a side hustle alongside your full-time job? If so, what is the primary reason?'
 
     # Export data to CSV
     import_data_name = f'../csv_exports/{report_folder}/raw-data.csv'
     data_frame = get_df_from_csv(import_data_name)
     my_question = f'Q{question_number}: {question_text}'
-    export_data_name = f'Question {question_number}.csv'
+    export_data_name = f'../csv_exports/{report_folder}/Question {question_number}.csv'
     export_data_to_csv(data_frame, my_question, export_data_name)

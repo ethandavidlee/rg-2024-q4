@@ -53,7 +53,7 @@ if __name__ == "__main__":
     report_folder = 'rg-2025-q2'
 
     # Export all survey data to Google Sheet
-    for num in range(2,17):
+    for num in range(3,17):
         filename = f'Question {num}'
         filepath = f'../csv_exports/{report_folder}/{filename}.csv'
         sheet_name = filename
@@ -61,4 +61,4 @@ if __name__ == "__main__":
 
     # Write demographics to GSheet
 #    demographics_filepath = f'../csv_exports/{report_folder}/demographics.csv'
- #   write_csv_to_gsheet(demographics_filepath, gsheetkey, 'Demographics')
+#    write_csv_to_gsheet(demographics_filepath, gsheetkey, 'Demographics')
