@@ -1,111 +1,7 @@
 import pandas as pd
 import datetime
 import sys
-
-def get_df_from_csv(filename):
-    """
-    Read data from a CSV file into a DataFrame.
-    """
-    df = pd.read_csv(filename)
-    return df
-
-
-def get_generations_list():
-    return ['Gen Z', 'Millennial', 'Gen X', 'Baby Boomer']
-
-
-def get_gender_list(df):
-    if 'Gender' in df.columns:
-        genders = df['Gender'].dropna().unique()
-        return genders
-    else:
-        return pd.Series(dtype=int)
-
-
-def get_region_list(df):
-    if 'US Region' in df.columns:
-        regions = df['US Region'].dropna().unique()
-        return regions
-    elif 'UK Region' in df.columns:
-        regions = ['London', 'Northern England', 'Midlands (England)', 'Southern England', 'Scotland', 'Wales',
-                   'Northern Ireland']
-        return regions
-    else:
-        return pd.Series(dtype=int)
-
-
-def get_generation(df, respondent):
-    if 'Year Of Birth' not in df.columns and 'Age' not in df.columns:
-        return None
-
-    current_year = datetime.datetime.now().year
-
-    if 'Year Of Birth' in df.columns:
-        year = df.loc[respondent, 'Year Of Birth']
-        if 1997 <= year <= 2012:
-            return 'Gen Z'
-        elif 1981 <= year <= 1996:
-            return 'Millennial'
-        elif 1965 <= year <= 1980:
-            return 'Gen X'
-        elif 1946 <= year <= 1964:
-            return 'Baby Boomer'
-        else:
-            return None
-
-    elif 'Age' in df.columns:
-        age = df.loc[respondent, 'Age']
-        birth_year = current_year - age
-        if 1997 <= birth_year <= 2012:
-            return 'Gen Z'
-        elif 1981 <= birth_year <= 1996:
-            return 'Millennial'
-        elif 1965 <= birth_year <= 1980:
-            return 'Gen X'
-        elif 1946 <= birth_year <= 1964:
-            return 'Baby Boomer'
-        else:
-            return None
-
-    else:
-        return None
-
-
-def get_gender(df, respondent):
-    if 'Gender' in df.columns:
-        gender = df.loc[respondent, 'Gender']
-        return gender
-    else:
-        return None
-
-
-def get_region(df, respondent):
-    if 'US Region' in df.columns:
-        region = df.loc[respondent, 'US Region']
-        return region
-    elif 'UK Region' in df.columns:
-        subregion = df.loc[respondent, 'UK Region']
-        if subregion == 'London':
-            region = 'London'
-        elif (subregion == 'North East (England' or subregion == 'North West (England)'  # Pollfish mistake with )
-              or subregion == 'Yorkshire And The Humber'):
-            region = 'Northern England'
-        elif subregion == 'West Midlands (England)' or subregion == 'East Midlands (England)':
-            region = 'Midlands (England)'
-        elif (subregion == 'South East (England)' or subregion == 'East Of England'
-              or subregion == 'South West (England)'):
-            region = 'Southern England'
-        elif subregion == 'Scotland':
-            region = 'Scotland'
-        elif subregion == 'Wales':
-            region = 'Wales'
-        elif subregion == 'Northern Ireland':
-            region = 'Northern Ireland'
-        else:
-            region = None
-        return region
-    else:
-        return None
+from cross_question_functions import *
 
 
 def get_matrix_statements(df, question):
@@ -245,6 +141,57 @@ def get_generation_data(df, question):
     return final_data
 
 
+def get_age_data(df, question):
+    statements = get_matrix_statements(df, question)
+    response_options = get_matrix_responses(df, question)
+    response_checker = False
+    ages = get_age_list(df)
+    age_counts = {age: 0 for age in ages}
+    responses_by_age = {age:
+                            {statement:
+                                 {response: 0 for response in response_options}
+                             for statement in statements}
+                        for age in ages}
+
+    for i, row in df.iterrows():
+        age = get_age(df, i)
+        for statement in statements:
+            response = get_single_matrix_response(df, question, i, statement)
+            if (age in responses_by_age
+                    and statement in responses_by_age[age]
+                    and response in responses_by_age[age][statement]
+            ):
+                responses_by_age[age][statement][response] += 1
+                response_checker = True
+        if response_checker:
+            age_counts[age] += 1
+            response_checker = False
+
+    # Initialize a list to hold data for all ages
+    all_data_frames = []
+
+    # Calculate percentages and prepare the DataFrame for each age
+    for age, statements in responses_by_age.items():
+        percentage_data = {}
+        age_count = age_counts[age]
+        for statement, responses in statements.items():
+            percentage_data[statement] = {}
+            for response, count in responses.items():
+                percentage_data[statement][response] = (count / age_count)
+
+        # Create a DataFrame for the current age
+        age_df = pd.DataFrame(percentage_data).T
+        age_df['Age'] = age  # Add the age for each column
+        all_data_frames.append(age_df)
+
+    # Concatenate all age data frames into a single DataFrame
+    final_data = pd.concat(all_data_frames, axis=0)
+    final_data.reset_index(inplace=True, drop=False)
+    final_data.rename(columns={'index': 'Statement'}, inplace=True)
+
+    return final_data
+
+
 def get_gender_data(df, question):
     statements = get_matrix_statements(df, question)
     response_options = get_matrix_responses(df, question)
@@ -347,7 +294,6 @@ def get_region_data(df, question):
     return final_data
 
 
-
 def write_section_to_csv(data, section_name, filename, mode='w'):
     if isinstance(data, pd.DataFrame) and not data.empty:
         with open(filename, mode) as f:
@@ -367,7 +313,7 @@ def export_data_to_csv(df, question, filename):
     """
     overall_data = get_overall_data_as_matrix(df, question)
     gender_data = get_gender_data(df, question)
-    generation_data = get_generation_data(df, question)
+    # generation_data = get_generation_data(df, question)
     region_data = get_region_data(df, question)
 
     # Write overall data or print warning
@@ -375,15 +321,21 @@ def export_data_to_csv(df, question, filename):
 
     # Append other data sections to the CSV with separation
     write_section_to_csv(gender_data, 'Gender Data', filename, 'a')
-    write_section_to_csv(generation_data, 'Generation Data', filename, 'a')
+    # write_section_to_csv(generation_data, 'Generation Data', filename, 'a')
+    write_section_to_csv(get_age_data(df, question), 'Age Data', filename, 'a')
     write_section_to_csv(region_data, 'Region Data', filename, 'a')
 
 
 if __name__ == "__main__":
-    import_data_name = '../csv_exports/cvg-2024-q4/raw-data.csv'
-    data_frame = get_df_from_csv(import_data_name)
-    my_question = 'How often have you done the following in your career?'
-    export_data_name = 'Question test.csv'
+    # Set variables for analysis
+    report_folder = 'rg-2025-q2'
+    question_number = '16'
+    question_text = 'When you define your own career success, how important are the following factors?'
 
+    # Export data to CSV
+    import_data_name = f'../csv_exports/{report_folder}/raw-data.csv'
+    data_frame = get_df_from_csv(import_data_name)
+    my_question = f'Q{question_number}: {question_text}'
+    export_data_name = f'Question {question_number}.csv'
     export_data_to_csv(data_frame, my_question, export_data_name)
 

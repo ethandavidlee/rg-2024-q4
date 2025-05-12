@@ -48,10 +48,17 @@ def write_csv_to_gsheet(filename, gsheetkey, sheet_name):
 
 
 if __name__ == "__main__":
-    gsheetkey = '1LoU7G_Esqfys0G4nFzKp1NU_1jCI7XBkYUB4_ycLPLI'
-    for num in range(1,16):
+    # Set constants for this survey
+    gsheetkey = '1p3z3WnzGesafG7se-6eJn5vfGaiErQiq_VHOz0Iu8hU'
+    report_folder = 'rg-2025-q2'
+
+    # Export all survey data to Google Sheet
+    for num in range(2,17):
         filename = f'Question {num}'
-        filepath = f'../csv_exports/rg-2025-jan/{filename}.csv'
+        filepath = f'../csv_exports/{report_folder}/{filename}.csv'
         sheet_name = filename
         write_csv_to_gsheet(filepath, gsheetkey, sheet_name)
 
+    # Write demographics to GSheet
+#    demographics_filepath = f'../csv_exports/{report_folder}/demographics.csv'
+ #   write_csv_to_gsheet(demographics_filepath, gsheetkey, 'Demographics')

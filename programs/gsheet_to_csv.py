@@ -25,11 +25,11 @@ def write_gsheet_to_csv(df, filename=None):
 
 
 if __name__ == "__main__":
-    # https://docs.google.com/spreadsheets/d/1LoU7G_Esqfys0G4nFzKp1NU_1jCI7XBkYUB4_ycLPLI/edit?gid=0#gid=0
+    # https://docs.google.com/spreadsheets/d/1p3z3WnzGesafG7se-6eJn5vfGaiErQiq_VHOz0Iu8hU/
 
-    gsheetkey = '1LoU7G_Esqfys0G4nFzKp1NU_1jCI7XBkYUB4_ycLPLI'
+    gsheetkey = '1p3z3WnzGesafG7se-6eJn5vfGaiErQiq_VHOz0Iu8hU'
     sheet_name = 'Raw Data'
-    filename = '../csv_exports/rg-2025-jan/raw-data.csv'
+    filename = '../csv_exports/rg-2025-q2/raw-data.csv'
 
     raw_data = get_df_from_gsheet(gsheetkey, sheet_name)
     write_gsheet_to_csv(raw_data, filename)
